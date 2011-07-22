@@ -93,6 +93,14 @@ void fib_int(mpz_t *result, long n)
     mpz_clear(a); mpz_clear(b); mpz_clear(c);
 }
 
+/**
+ * Compute the n'th Fibonacci number by both methods (int and float),
+ * and record how long each of them took to run.
+ *
+ * The return value indicates whether the two methods gave the same
+ * answer - so if it returns false, something is wrong with at least
+ * one of them.
+ */
 bool compute_and_compare(long n, clock_t *int_ticks, clock_t *float_ticks)
 {
     mpz_t int_result;
