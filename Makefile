@@ -1,2 +1,2 @@
 CFLAGS=-lgmp -Werror -Wall -O2
-all: float-calc
+all: float-calc fixed
