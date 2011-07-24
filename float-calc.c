@@ -215,25 +215,24 @@ int main(int argc, char **argv)
     if (argc == 2 && 0 == strcmp("graph", argv[1])) {
         return graph(argv[0]);
     }
-    else if (argc == 2 || argc == 3) {
-        n = strtol(argv[1], &end_ptr, 10);
-        if (*(argv[1]) == 0 || *end_ptr != 0) {
-            fprintf(stderr, "Usage: %s (<n> | graph)\n", argv[0]);
-            fprintf(stderr, "Input was not a number\n");
+    else if (argc == 3) {
+        n = strtol(argv[2], &end_ptr, 10);
+        if (*(argv[2]) == 0 || *end_ptr != 0) {
+            fprintf(stderr, "%s: Input is not a number: %s\n", argv[0], argv[2]);
             return EX_USAGE;
         }
 
-        if (argc == 2) {
+        if (0 == strcmp("timing", argv[1])) {
             return compute_both_ways(argv[0], n);
         }
-        else if (0 == strcmp("int", argv[2])) {
+        else if (0 == strcmp("int", argv[1])) {
             mpz_t int_result;
             fib_int(&int_result, n);
             gmp_printf("fib(%ld) = %Zd\n", n, int_result);
             mpz_clear(int_result);
             return 0;
         }
-        else if (0 == strcmp("float", argv[2])) {
+        else if (0 == strcmp("float", argv[1])) {
             mpf_t float_result;
             fib_float(&float_result, n);
             gmp_printf("fib(%ld) = %.0Ff\n", n, float_result);
@@ -242,6 +241,9 @@ int main(int argc, char **argv)
         }
     }
 
-    fprintf(stderr, "Usage: %s (<n> | graph)\n", argv[0]);
+    fprintf(stderr, "Usage: %s int <n>\n", argv[0]);
+    fprintf(stderr, "       %s float <n>\n", argv[0]);
+    fprintf(stderr, "       %s timing <n>\n", argv[0]);
+    fprintf(stderr, "       %s graph\n", argv[0]);
     return EX_USAGE;
 }
