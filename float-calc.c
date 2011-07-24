@@ -212,15 +212,10 @@ int main(int argc, char **argv)
     long n;
     char *end_ptr;
 
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s (<n> | graph)\n", argv[0]);
-        return EX_USAGE;
-    }
-
-    if (0 == strcmp("graph", argv[1])) {
+    if (argc == 2 && 0 == strcmp("graph", argv[1])) {
         return graph(argv[0]);
     }
-    else {
+    else if (argc == 2 || argc == 3) {
         n = strtol(argv[1], &end_ptr, 10);
         if (*(argv[1]) == 0 || *end_ptr != 0) {
             fprintf(stderr, "Usage: %s (<n> | graph)\n", argv[0]);
@@ -228,6 +223,25 @@ int main(int argc, char **argv)
             return EX_USAGE;
         }
 
-        return compute_both_ways(argv[0], n);
+        if (argc == 2) {
+            return compute_both_ways(argv[0], n);
+        }
+        else if (0 == strcmp("int", argv[2])) {
+            mpz_t int_result;
+            fib_int(&int_result, n);
+            gmp_printf("fib(%ld) = %Zd\n", n, int_result);
+            mpz_clear(int_result);
+            return 0;
+        }
+        else if (0 == strcmp("float", argv[2])) {
+            mpf_t float_result;
+            fib_float(&float_result, n);
+            gmp_printf("fib(%ld) = %.0Ff\n", n, float_result);
+            mpf_clear(float_result);
+            return 0;
+        }
     }
+
+    fprintf(stderr, "Usage: %s (<n> | graph)\n", argv[0]);
+    return EX_USAGE;
 }
