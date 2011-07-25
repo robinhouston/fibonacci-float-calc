@@ -94,7 +94,70 @@ void fib_int(mpz_t *result, long n)
 }
 
 /**
- * Compute the n'th Fibonacci number by both methods (int and float),
+ * Compute the nth Fibonacci number by using Binet's formula
+ * in the extension ring Z[sqrt 5], or equivalently by using
+ * the Lucas number identities:
+ *
+ *  fib(2n) = luc(n) * fib(n)
+ *  luc(2n) = 5*luc(n)^2 + fib(n)^2
+ *
+ *  fib(n+1) = (luc(n) + fib(n)) / 2
+ *  luc(n+1) = (luc(n) + 5*fib(n)) / 2
+ */
+void fib_lucas(mpz_t *result, long n)
+{
+    mpz_t a, b, ab;
+    long bit, mask;
+    bool is_even = ((n % 2) == 0);
+
+    /* Treat even numbers as a special case, so we can replace
+       the (slowest) final iteration with a single multiplication,
+       which gives us a decent 10-20% speed boost. */
+    if (is_even) n >>= 1;
+
+    /* Set 'bit' to the most-significant 1-bit of 'n' */
+    bit = 1; mask = 1;
+    while (n > mask) {
+        bit = bit << 1;
+        mask = (mask << 1) | 1;
+    }
+
+    mpz_init_set_ui(a, 2);
+    mpz_init_set_ui(b, 0);
+    mpz_init(ab);
+
+    while (bit > 0) {
+        mpz_mul(ab, a, b);
+        mpz_add(a, a, b);           /* a+b, b */
+        mpz_mul_2exp(b, b, 2);      /* a+b, 4b */
+        mpz_add(b, b, a);           /* a+b, a+5b */
+        mpz_divexact_ui(b, b, 2);   /* a+b, (a+5b)/2 */
+        mpz_mul(a, a, b);           /* (a+b)(a+5b)/2, " */
+        mpz_submul_ui(a, ab, 3);    /* (a+b)(a+5b)/2 - 3ab = (a^2 + 5b^2)/2, " */
+        mpz_set(b, ab);             /* (a^2 + 5b^2)/2, ab */
+
+        if ( (n & bit) != 0 ) {
+            mpz_add(ab, a, b);
+            mpz_divexact_ui(ab, ab, 2);
+            mpz_mul_2exp(b, b, 1);
+            mpz_add(a, ab, b);
+            mpz_set(b, ab);
+        }
+
+        bit >>= 1;
+    }
+
+    if (is_even) {
+        mpz_init(*result);
+        mpz_mul(*result, a, b);
+    } else {
+        mpz_init_set(*result, b);
+    }
+    mpz_clear(a); mpz_clear(b); mpz_clear(ab);
+}
+
+/**
+ * Compute the n'th Fibonacci number in two ways (int and float),
  * and record how long each of them took to run.
  *
  * The return value indicates whether the two methods gave the same
@@ -147,7 +210,7 @@ bool compute_and_compare(long n, clock_t *int_ticks, clock_t *float_ticks)
 }
 
 /**
- * Compute fib(n) by the two methods, and print how long each of them took.
+ * Compute fib(n) by the 'int' and 'float' methods, and print how long each took.
  *
  * The return value is intended to be used as an exit status: it’s 0 if the
  * two methods gave the same result, and EX_SOFTWARE otherwise.
@@ -226,24 +289,39 @@ int main(int argc, char **argv)
             return compute_both_ways(argv[0], n);
         }
         else if (0 == strcmp("int", argv[1])) {
-            mpz_t int_result;
-            fib_int(&int_result, n);
-            gmp_printf("fib(%ld) = %Zd\n", n, int_result);
-            mpz_clear(int_result);
+            mpz_t result;
+            fib_int(&result, n);
+            gmp_printf("fib(%ld) = %Zd\n", n, result);
+            mpz_clear(result);
             return 0;
         }
         else if (0 == strcmp("float", argv[1])) {
-            mpf_t float_result;
-            fib_float(&float_result, n);
-            gmp_printf("fib(%ld) = %.0Ff\n", n, float_result);
-            mpf_clear(float_result);
+            mpf_t result;
+            fib_float(&result, n);
+            gmp_printf("fib(%ld) = %.0Ff\n", n, result);
+            mpf_clear(result);
+            return 0;
+        }
+        else if (0 == strcmp("builtin", argv[1])) {
+            mpz_t result;
+            mpz_init(result);
+            mpz_fib_ui(result, n);
+            gmp_printf("fib(%ld) = %Zd\n", n, result);
+            mpz_clear(result);
+            return 0;
+        }
+        else if (0 == strcmp("lucas", argv[1])) {
+            mpz_t result;
+            fib_lucas(&result, n);
+            gmp_printf("fib(%ld) = %Zd\n", n, result);
+            mpz_clear(result);
             return 0;
         }
     }
 
-    fprintf(stderr, "Usage: %s int <n>\n", argv[0]);
-    fprintf(stderr, "       %s float <n>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <type> <n>\n", argv[0]);
     fprintf(stderr, "       %s timing <n>\n", argv[0]);
     fprintf(stderr, "       %s graph\n", argv[0]);
+    fprintf(stderr, "Supported types are: int, float, builtin, lucas\n");
     return EX_USAGE;
 }
