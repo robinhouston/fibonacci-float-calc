@@ -4,6 +4,13 @@
 
 #include <gmp.h>
 
+/*
+ *  fib(2n) = luc(n) fib(n)
+ *  luc(2n) = 5 fib(n)^2 + 2 (-1)^n
+ *
+ *  luc(2n + 1) = 5 fib(n) (fib(n) + luc(n)) / 2 + (-1)^n
+ *  fib(2n + 1) = luc(2n + 1) - 2 luc(n) fib(n)
+ */
 
 static mpz_t temp;
 
