@@ -14,6 +14,16 @@
 
 static mpz_t temp;
 
+/**
+ * Compute the nth Fibonacci and Lucas numbers.
+ *
+ * The algorithm uses two multiplications per input bit
+ * (neglecting, for the sake of simplicity, the very much
+ * cheaper operations of multiplying by 5 and dividing by 2;
+ * profiling reveals that the run time is indeed dominated
+ * by the two large multiplications, so this neglect is quite
+ * reasonable).
+ */
 void fib_luc(mpz_t *fib_result, mpz_t *luc_result, long n)
 {
     if (n == 0) {
@@ -48,6 +58,16 @@ void fib_luc(mpz_t *fib_result, mpz_t *luc_result, long n)
     }
 }
 
+/**
+ * Compute the nth Fibonacci number.
+ *
+ * This is noticeably cheaper to compute than just calling
+ * fib_luc and throwing away the unwanted Lucas number,
+ * because we use only a single multiplication in the final
+ * step, rather than two -- and these multiplications are
+ * rather expensive, involving as they do numbers whose magnitude
+ * is exponential in the magnitude of the input.
+ */
 void fib(mpz_t *result, long n)
 {
     mpz_t luc;
