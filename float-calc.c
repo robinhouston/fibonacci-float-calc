@@ -240,26 +240,26 @@ int compute_both_ways(char *executable_name, long n)
  */
 int graph(char *executable_name)
 {
-	long n;
+    long n;
 
-	printf("n\tint\tfloat\n");
+    printf("n\tint\tfloat\n");
 
-	for(n = 1000; n <= 1000000; n += 1000) {
-		clock_t int_ticks, float_ticks;
-		bool results_match;
+    for(n = 1000; n <= 1000000; n += 1000) {
+        clock_t int_ticks, float_ticks;
+        bool results_match;
 
-	    results_match = compute_and_compare(n, &int_ticks, &float_ticks);
+        results_match = compute_and_compare(n, &int_ticks, &float_ticks);
 
-	    if (!results_match) {
-	        fprintf(stderr, "%s: different methods gave different results for fib(%ld)\n\n",
-	            executable_name, n);
-	        return EX_SOFTWARE;
-	    }
+        if (!results_match) {
+            fprintf(stderr, "%s: different methods gave different results for fib(%ld)\n\n",
+                executable_name, n);
+            return EX_SOFTWARE;
+        }
 
-	    printf("%ld\t%lu\t%lu\n", n, int_ticks, float_ticks);
-	}
+        printf("%ld\t%lu\t%lu\n", n, int_ticks, float_ticks);
+    }
 
-	return 0;
+    return 0;
 }
 
 /**
