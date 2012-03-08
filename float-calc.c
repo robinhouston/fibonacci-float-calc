@@ -274,46 +274,55 @@ int main(int argc, char **argv)
 {
     long n;
     char *end_ptr;
+    bool print_result = true;
+    char **args = argv + 1;
+    int n_args = argc - 1;
+    
+    if (n_args > 0 && 0 == strcmp("--no-print", args[0])) {
+        print_result = false;
+        --n_args;
+        ++args;
+    }
 
-    if (argc == 2 && 0 == strcmp("graph", argv[1])) {
+    if (n_args == 1 && 0 == strcmp("graph", args[0])) {
         return graph(argv[0]);
     }
-    else if (argc == 3) {
-        n = strtol(argv[2], &end_ptr, 10);
-        if (*(argv[2]) == 0 || *end_ptr != 0) {
-            fprintf(stderr, "%s: Input is not a number: %s\n", argv[0], argv[2]);
+    else if (n_args == 2) {
+        n = strtol(args[1], &end_ptr, 10);
+        if (*(args[1]) == 0 || *end_ptr != 0) {
+            fprintf(stderr, "%s: Input is not a number: %s\n", argv[0], args[1]);
             return EX_USAGE;
         }
 
-        if (0 == strcmp("timing", argv[1])) {
+        if (0 == strcmp("timing", args[0])) {
             return compute_both_ways(argv[0], n);
         }
-        else if (0 == strcmp("int", argv[1])) {
+        else if (0 == strcmp("int", args[0])) {
             mpz_t result;
             fib_int(&result, n);
-            gmp_printf("fib(%ld) = %Zd\n", n, result);
+            if (print_result) gmp_printf("fib(%ld) = %Zd\n", n, result);
             mpz_clear(result);
             return 0;
         }
-        else if (0 == strcmp("float", argv[1])) {
+        else if (0 == strcmp("float", args[0])) {
             mpf_t result;
             fib_float(&result, n);
-            gmp_printf("fib(%ld) = %.0Ff\n", n, result);
+            if (print_result) gmp_printf("fib(%ld) = %.0Ff\n", n, result);
             mpf_clear(result);
             return 0;
         }
-        else if (0 == strcmp("builtin", argv[1])) {
+        else if (0 == strcmp("builtin", args[0])) {
             mpz_t result;
             mpz_init(result);
             mpz_fib_ui(result, n);
-            gmp_printf("fib(%ld) = %Zd\n", n, result);
+            if (print_result) gmp_printf("fib(%ld) = %Zd\n", n, result);
             mpz_clear(result);
             return 0;
         }
-        else if (0 == strcmp("lucas", argv[1])) {
+        else if (0 == strcmp("lucas", args[0])) {
             mpz_t result;
             fib_lucas(&result, n);
-            gmp_printf("fib(%ld) = %Zd\n", n, result);
+            if (print_result) gmp_printf("fib(%ld) = %Zd\n", n, result);
             mpz_clear(result);
             return 0;
         }
