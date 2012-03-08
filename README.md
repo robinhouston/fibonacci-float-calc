@@ -25,4 +25,4 @@ There is also a 'graph' mode that will run the `int` and `float` algorithms for 
 
 ## lucas.c
 
-Another integer algorithm using Lucas-number identities. This is a more highly optimised algorithm than the one in `float-calc.c`.
+Another integer algorithm using Lucas-number identities. This is essentially a failed attempt to find a faster algorithm than `float-calc lucas`. 
